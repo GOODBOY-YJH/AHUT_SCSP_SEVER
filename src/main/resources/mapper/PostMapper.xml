@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ahut_scsp.mapper.PostMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.ahut_scsp.domain.Post">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="INTEGER"/>
+            <result property="postTitle" column="post_title" jdbcType="VARCHAR"/>
+            <result property="postContent" column="post_content" jdbcType="VARCHAR"/>
+            <result property="postLike" column="post_like" jdbcType="VARCHAR"/>
+            <result property="isDelete" column="is_delete" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,post_title,post_content,
+        post_like,is_delete,create_time,
+        update_time
+    </sql>
+
+
+    <select id="searchPostByPage" parameterType="HashMap" resultType="HashMap">
+        SELECT id,
+        post_title AS title,
+        post_content AS description,
+        LENGTH(post_like) - LENGTH(REPLACE(post_like, ',', '')) AS likes,
+        DATE_FORMAT(create_time,'%Y-%m-%d %H:%i') AS createTime
+        FROM post
+        WHERE 1=1
+        AND is_delete = 'no'
+        <if test="keyword != null">
+            <!--防止SQL注入-->
+            AND (post_title LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%') OR
+            post_content LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%'))
+        </if>
+        <if test="sortType == 'time'">
+            order by create_time desc
+        </if>
+        <if test="sortType == 'likes'">
+            order by likes desc
+        </if>
+        LIMIT #{start}, #{length}
+    </select>
+    <select id="searchPostCount" parameterType="HashMap" resultType="long">
+        SELECT COUNT(id)
+        FROM post
+        WHERE 1=1
+        AND is_delete = 'no'
+        <if test="keyword != null">
+            <!--防止SQL注入-->
+            AND (post_title LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%') OR
+            post_content LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%'))
+        </if>
+    </select>
+
+    <select id="selectPostById" parameterType="int" resultType="HashMap">
+        select user_id AS postUserd,
+               post_title AS title,
+               post_content AS content,
+               LENGTH(post_like) - LENGTH(REPLACE(post_like, ',', '')) AS likes,
+               DATE_FORMAT(create_time,'%Y-%m-%d %H:%i') AS createTime
+        from post
+        where id = #{id}
+        and is_delete = 'no'
+    </select>
+
+    <select id="checkLikes" parameterType="int" resultType="boolean">
+        select FIND_IN_SET(#{userId}, post_like) > 0
+        from post
+        where id = #{postId}
+        and is_delete = 'no'
+    </select>
+
+    <update id="updateLikes" parameterType="HashMap">
+        update post
+        set post_like = CONCAT(post_like, #{userId}, ",")
+        where id = #{postId} and is_delete = 'no'
+    </update>
+
+    <select id="searchLikesById" parameterType="int" resultType="int">
+        select LENGTH(post_like) - LENGTH(REPLACE(post_like, ',', '')) AS likes
+        from post where id = #{postId} and is_delete = 'no'
+    </select>
+
+    <update id="deletePostById" parameterType="int">
+        update post set is_delete = 'yes' where id = #{postId}
+    </update>
+
+    <select id="searchPostDelete" parameterType="int" resultType="string">
+        select is_delete from post where id = #{postId}
+    </select>
+
+    <update id="updatePostById" parameterType="hashmap">
+        update post set post_title = #{title}, post_content = #{content}
+        where id = #{postId} and is_delete = 'no'
+    </update>
+</mapper>

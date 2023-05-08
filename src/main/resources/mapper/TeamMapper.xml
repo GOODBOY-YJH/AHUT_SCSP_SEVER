@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ahut_scsp.mapper.TeamMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.ahut_scsp.domain.Team">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="INTEGER"/>
+            <result property="teamName" column="team_name" jdbcType="VARCHAR"/>
+            <result property="teamIntroduction" column="team_introduction" jdbcType="VARCHAR"/>
+            <result property="teamImage" column="team_image" jdbcType="VARCHAR"/>
+            <result property="teamCollege" column="team_college" jdbcType="VARCHAR"/>
+            <result property="teamType" column="team_type" jdbcType="VARCHAR"/>
+            <result property="contactInformation" column="contact_information" jdbcType="VARCHAR"/>
+            <result property="teamStatus" column="team_status" jdbcType="VARCHAR"/>
+            <result property="teamCreateTime" column="team_create_time" jdbcType="TIMESTAMP"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,team_name,team_introduction,
+        team_image,team_college,team_type,
+        contact_information,team_status,team_create_time,
+        create_time,update_time
+    </sql>
+
+    <select id="searchTeamByPage" parameterType="HashMap" resultType="HashMap">
+        SELECT DISTINCT id,
+        team_name AS teamName,
+        substring_index(team_image,',',1) AS teamImage,
+        team_introduction AS teamIntroduction
+        FROM team
+        WHERE 1=1
+        <if test="keyword != null">
+            <!--防止SQL注入-->
+            AND (team_name LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%') OR
+            team_introduction LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%'))
+        </if>
+        <if test="teamTypes != null">
+            AND team_type IN
+            <foreach collection="teamTypes" open="(" separator="," close=")" item="type">
+                #{type}
+            </foreach>
+        </if>
+        <if test="colleges != null">
+            AND team_college IN
+            <foreach collection="colleges" open="(" separator="," close=")" item="college">
+                #{college}
+            </foreach>
+        </if>
+        <if test="isMe == true">
+            AND user_id = #{userId} and team_status != 'over'
+        </if>
+        <if test="isMe == false || isMe == null">
+            <choose>
+                <when test="teamStatus != null">
+                    AND team_status = #{teamStatus}
+                </when>
+                <otherwise>
+                    AND team_status = 'active'
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{start}, #{length}
+    </select>
+    <select id="searchTeamCount" parameterType="HashMap" resultType="long">
+        SELECT COUNT(id)
+        FROM team
+        WHERE 1=1
+        <if test="keyword != null">
+            <!--防止SQL注入-->
+            AND (team_name LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%') OR
+            team_introduction LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%'))
+        </if>
+        <if test="teamTypes != null">
+            AND team_type IN
+            <foreach collection="teamTypes" open="(" separator="," close=")" item="type">
+                #{type}
+            </foreach>
+        </if>
+        <if test="colleges != null">
+            AND team_college IN
+            <foreach collection="colleges" open="(" separator="," close=")" item="college">
+                #{college}
+            </foreach>
+        </if>
+        <if test="isMe == true">
+            AND user_id = #{userId} and team_status != 'over'
+        </if>
+        <if test="isMe == false || isMe == null">
+            <choose>
+                <when test="teamStatus != null">
+                    AND team_status = #{teamStatus}
+                </when>
+                <otherwise>
+                    AND team_status = 'active'
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+
+    <select id="searchTeamCollege" parameterType="boolean" resultType="String">
+        select DISTINCT team_college
+        from team where team_status = 'active'
+        <if test="isMe">
+            OR team_status != 'over'
+        </if>
+    </select>
+
+    <select id="searchTeamType" parameterType="boolean" resultType="String">
+        select DISTINCT team_type
+        from team where team_status = 'active'
+        <if test="isMe">
+            OR team_status != 'over'
+        </if>
+    </select>
+
+    <select id="selectTeamById" parameterType="int" resultType="HashMap">
+        select user_id AS teamUserd,
+               team_name AS teamName,
+               team_introduction AS teamIntroduction,
+               team_image AS images
+        from team
+        where id = #{id}
+        and team_status != 'over'
+    </select>
+
+    <select id="selectUpdateTeamById" parameterType="int" resultType="HashMap">
+        select team_name AS teamName,
+               team_introduction AS teamIntroduction,
+               team_image AS images,
+               team_type AS teamType,
+               team_college AS college,
+               team_create_time AS teamCreateTime
+        from team
+        where id = #{id}
+          and team_status != 'over'
+    </select>
+
+    <select id="searchTeamDelete" parameterType="int" resultType="string">
+        select team_status AS isDelete from team where id = #{teamId}
+    </select>
+
+    <update id="deleteTeamById" parameterType="int">
+        update team set team_status = 'over' where id = #{teamId}
+    </update>
+
+</mapper>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ahut_scsp.mapper.TeamCollegesMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.ahut_scsp.domain.TeamColleges">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="college" column="college" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,college
+    </sql>
+
+    <select id="searchAllCollege" resultType="String">
+        select DISTINCT college
+        from team_colleges;
+    </select>
+</mapper>

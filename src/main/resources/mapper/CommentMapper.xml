@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ahut_scsp.mapper.CommentMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.ahut_scsp.domain.Comment">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="INTEGER"/>
+            <result property="receiveUserId" column="user_id" jdbcType="INTEGER"/>
+            <result property="postId" column="post_id" jdbcType="INTEGER"/>
+            <result property="primerId" column="primer_id" jdbcType="INTEGER"/>
+            <result property="commentContent" column="comment_content" jdbcType="VARCHAR"/>
+            <result property="isDelete" column="is_delete" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,receive_user_id,post_id,
+        primer_id,comment_content,is_delete,
+        create_time,update_time
+    </sql>
+
+    <select id="searchPostCommentCount" parameterType="int" resultType="int">
+        select COUNT(id) from comment
+        where post_id = #{postId}
+        and is_delete = 'no'
+        order by create_time desc
+    </select>
+
+    <select id="selectCommentByPostId" parameterType="int" resultType="HashMap">
+        select a.id AS id,
+               a.user_id AS userId,
+               a.comment_content AS content,
+               COUNT(b.id) AS replyCount,
+               DATE_FORMAT(a.create_time,'%Y-%m-%d %H:%i:%s') AS time
+        from comment a left join comment b on a.id = b.primer_id
+        where a.post_id = #{postId}
+        AND a.primer_id is null
+        group by a.id
+        order by replyCount desc, a.create_time desc
+        limit 0, 3
+    </select>
+
+
+    <select id="searchCommentById" parameterType="int" resultType="HashMap">
+        select id AS id,
+               user_id AS userId,
+               comment_content AS content,
+               DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') AS time
+        from comment
+        where id = #{commentId}
+    </select>
+
+    <select id="searchNewReplyById" parameterType="int" resultType="HashMap">
+        select id,
+               user_id AS userId,
+               receive_user_id AS receiveUserId,
+               comment_content AS content,
+               DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') AS time
+        from comment
+        where id = #{commentId}
+        and is_delete = 'no'
+    </select>
+
+    <select id="searchCommentCountByPostId" parameterType="int" resultType="int">
+        select count(id)
+        from comment
+        where post_id = #{postId}
+        AND primer_id is null
+        order by create_time desc
+    </select>
+
+
+
+    <select id="searchReplyComment" parameterType="int" resultType="HashMap">
+        select id,
+               user_id AS userId,
+               receive_user_id AS receiveUserId,
+               comment_content AS content,
+               DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') AS time
+        from comment
+        where primer_id = #{commentId} and post_id = #{postId}
+        and is_delete = 'no'
+        order by create_time desc
+        limit 0, 3
+    </select>
+
+    <select id="searchReplyCommentCount" parameterType="int" resultType="int">
+        select count(id)
+        from comment
+        where primer_id = #{commentId} and post_id = #{postId}
+          and is_delete = 'no'
+        order by create_time desc
+    </select>
+
+    <select id="searchMoreComments" parameterType="HashMap" resultType="HashMap">
+        select a.id AS id,
+               a.user_id AS userId,
+               a.comment_content AS content,
+               COUNT(b.id) AS replyCount,
+               DATE_FORMAT(a.create_time,'%Y-%m-%d %H:%i:%s') AS time
+        from comment a left join comment b on a.id = b.primer_id
+        where a.post_id = #{postId}
+          AND a.primer_id is null
+        group by a.id
+        order by replyCount desc, a.create_time desc
+        limit #{start}, #{commentPageSize}
+    </select>
+
+    <select id="searchMoreReplies" parameterType="HashMap" resultType="HashMap">
+        select id,
+               user_id AS userId,
+               receive_user_id AS receiveUserId,
+               comment_content AS content,
+               DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') AS time
+        from comment
+        where primer_id = #{commentId} and post_id = #{postId}
+          and is_delete = 'no'
+        order by create_time desc
+        limit #{start}, #{replyPageSize}
+    </select>
+</mapper>

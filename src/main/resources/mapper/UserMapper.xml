@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ahut_scsp.mapper.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.ahut_scsp.domain.User">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+            <result property="email" column="email" jdbcType="VARCHAR"/>
+            <result property="password" column="password" jdbcType="VARCHAR"/>
+            <result property="gender" column="gender" jdbcType="VARCHAR"/>
+            <result property="birthDate" column="birth_date" jdbcType="DATE"/>
+            <result property="phoneNumber" column="phone_number" jdbcType="VARCHAR"/>
+            <result property="address" column="address" jdbcType="VARCHAR"/>
+            <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
+            <result property="userType" column="user_type" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_name,email,
+        password,gender,birth_date,
+        phone_number,address,avatar,
+        user_type,status,create_time,update_time
+    </sql>
+
+    <select id="getUserInfoById" resultType="HashMap">
+        SELECT user_name AS userName,
+               avatar,
+               gender,
+               birth_date AS birthDate,
+               email,
+               address,
+               phone_number AS phoneNumber
+        FROM user
+        WHERE id = #{id} and status = 'active'
+    </select>
+
+    <update id="updatePassword" parameterType="HashMap">
+        update user set password = #{password} where id = #{userId}  and status = 'active'
+    </update>
+
+    <select id="searchUserByPage" parameterType="HashMap" resultType="HashMap">
+        SELECT id,
+               user_name AS name,
+               user_type AS userType
+        FROM user
+        WHERE 1=1  and status = 'active'
+        <if test="keyword != null">
+            <!--防止SQL注入-->
+            AND username LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%')
+        </if>
+        LIMIT #{start}, #{length}
+    </select>
+
+    <select id="searchUserCount" parameterType="HashMap" resultType="long">
+        SELECT COUNT(id)
+        FROM user
+        WHERE 1=1 and status = 'active'
+        <if test="keyword != null">
+            <!--防止SQL注入-->
+            AND username LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+
+    <update id="changeUserType" parameterType="HashMap">
+        update user set user_type = #{type} where id = #{userId} and status = 'active'
+    </update>
+
+    <update id="deleteUserById" parameterType="HashMap">
+        update user set status = 'delete' where id = #{userId}
+    </update>
+
+</mapper>

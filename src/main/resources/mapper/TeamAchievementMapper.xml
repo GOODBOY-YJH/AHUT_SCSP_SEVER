@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ahut_scsp.mapper.TeamAchievementMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.ahut_scsp.domain.TeamAchievement">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="teamId" column="team_id" jdbcType="INTEGER"/>
+            <result property="achievementDescription" column="achievement_description" jdbcType="VARCHAR"/>
+            <result property="achievementImage" column="achievement_image" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,team_id,achievement_description,
+        achievement_image,create_time,update_time
+    </sql>
+
+
+    <select id="selectAchievementByTeamId" parameterType="int" resultType="HashMap">
+        select id,
+               achievement_description as description,
+               achievement_image as avatar
+        from team_achievement
+        where team_id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,132 @@
+server:
+  tomcat:
+    uri-encoding: utf-8
+    threads:
+      max: 200
+      min-spare: 30
+    connection-timeout: 5000ms
+  port: 8081
+  servlet:
+    context-path: /ahut_scsp
+
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://localhost:3306/ahut_scsp?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: a520520a
+    druid:
+        initialSize: 5 #初始化连接大小
+        minIdle: 5     #最小连接池数量
+        maxActive: 20  #最大连接池数量
+        maxWait: 60000 #获取连接时最大等待时间，单位毫秒
+        timeBetweenEvictionRunsMillis: 60000 #配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+        minEvictableIdleTimeMillis: 300000   #配置一个连接在池中最小生存的时间，单位是毫秒
+        validationQuery: SELECT 1 from DUAL  #测试连接
+        testWhileIdle: true                  #申请连接的时候检测，建议配置为true，不影响性能，并且保证安全性
+        testOnBorrow: false                  #获取连接时执行检测，建议关闭，影响性能
+        testOnReturn: false                  #归还连接时执行检测，建议关闭，影响性能
+        poolPreparedStatements: false       #是否开启PSCache，PSCache对支持游标的数据库性能提升巨大，oracle建议开启，mysql下建议关闭
+        maxPoolPreparedStatementPerConnectionSize: 20 #开启poolPreparedStatements后生效
+        filters: stat,wall,slf4j   #配置扩展插件，常用的插件有=>stat:监控统计  slf4j:日志  wall:防御sql注入
+        connectionProperties: 'druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000'
+  # redis配置
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: a520520a
+      database: 0
+      timeout: 5000
+      lettuce:
+        pool:
+        # 连接池最大连接数
+          max-active: 200
+          # 连接池最大阻塞等待时间（使用负值表示没有限制）
+          max-wait: -1ms
+          # 连接池中的最大空闲连接
+          max-idle: 10
+          # 连接池中的最小空闲连接
+          min-idle: 0
+  servlet:
+    multipart:
+      max-file-size: 10MB
+
+
+
+
+
+############## Sa-Token 配置 (文档: https://sa-token.cc) ##############
+sa-token:
+  # token名称 (同时也是cookie名称)
+  token-name: token
+  # token有效期，单位s 默认30天, -1代表永不过期
+  timeout: 2592000
+  # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
+  activity-timeout: -1
+  # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录)
+  is-concurrent: true
+  # 在多人登录同一账号时，是否共用一个token (为true时所有登录共用一个token, 为false时每次登录新建一个token)
+  is-share: true
+  # token风格
+  token-style: uuid
+  # 是否输出操作日志
+  is-log: false
+    # jwt秘钥
+  jwt-secret-key: asdasdasifhueuiwyurfewbfjsdafjk
+
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /doc-api.html
+  swagger-ui:
+    path: /swagger-ui.html
+    disable-swagger-default-url: on
+
+#spring:
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://121.41.71.9:3306/security?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&serverTimezone=UTC&allowMultiQueries=true&useAffectedRows=true
+#    username: root
+#    password: 12345a
+#    type: com.alibaba.druid.pool.DruidDataSource  # 使用 DruidDataSource作为数据源
+#  druid:
+#    initialSize: 5 #初始化连接大小
+#    minIdle: 5     #最小连接池数量
+#    maxActive: 20  #最大连接池数量
+#    maxWait: 60000 #获取连接时最大等待时间，单位毫秒
+#    timeBetweenEvictionRunsMillis: 60000 #配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+#    minEvictableIdleTimeMillis: 300000   #配置一个连接在池中最小生存的时间，单位是毫秒
+#    validationQuery: SELECT 1 from DUAL  #测试连接
+#    testWhileIdle: true                  #申请连接的时候检测，建议配置为true，不影响性能，并且保证安全性
+#    testOnBorrow: false                  #获取连接时执行检测，建议关闭，影响性能
+#    testOnReturn: false                  #归还连接时执行检测，建议关闭，影响性能
+#    poolPreparedStatements: false       #是否开启PSCache，PSCache对支持游标的数据库性能提升巨大，oracle建议开启，mysql下建议关闭
+#    maxPoolPreparedStatementPerConnectionSize: 20 #开启poolPreparedStatements后生效
+#    filters: stat,wall,slf4j   #配置扩展插件，常用的插件有=>stat:监控统计  slf4j:日志  wall:防御sql注入
+#    connectionProperties: 'druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000'
+
+
+#
+## 配置logback日志组件
+#logging:
+#  config: classpath:logback-spring.xml
+
+
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: com.examle.wx.db.domain
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+
+tencent:
+  cloud:
+    secretId:
+    secretKey:
+    region:
+    bucket:
